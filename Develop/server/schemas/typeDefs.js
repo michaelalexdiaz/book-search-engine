@@ -1,6 +1,6 @@
 const { gql } = require('apollo-server-express');
 
-// making the resolvers in the order that the README has them even though it looks weird.
+// making the typeDefs in the order that the README has them even though it looks weird.
 const typeDefs = gql`
     type Query {
         me: User
