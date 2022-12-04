@@ -2,6 +2,7 @@ const { User, Book } = require('../models');
 const { AuthenticationError } = require('apollo-server-express');
 const { signToken } = require('../utils/auth');
 
+// Making resolvers in the order that the README has them even though it looks weird.
 const resolvers = {
     Query: {
         me: async (parent, args, context) => {
