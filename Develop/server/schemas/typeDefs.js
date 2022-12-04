@@ -1,61 +1,44 @@
-const { User, Book } = require('../models');
-const { AuthenticationError } = require('apollo-server-express');
-const { signToken } = require('../utils/auth');
+const { gql } = require('apollo-server-express');
 
-// Making resolvers in the order that the README has them even though it looks weird.
-const resolvers = {
-    Query: {
-        me: async (parent, args, context) => {
-            if (context.user) {
-                const userData = await User.findOne({ _id: context.user._id })
-                .select('-__v -password')
-                return userData;
-            }
-            throw new AuthenticationError('Please Log In');
-        }
-    },
-    Mutation: {
-        login: async (parent, { email, password }) => {
-            const user = await User.findOne( { email });
-            if (!user) {
-                throw new AuthenticationError('Incorrect Email')
-            }
-            const correctPw = await user.isCorrectPassword(password);
-            if(!correctPw) {
-                throw new AuthenticationError('Incorrect Password')
-            }
-            const token = signToken(user);
-            return { token, user };
-        },
-        addUser: async (parent, args) => {
-            const user = await User.create(args);
-            const token = signToken(user);
-
-            return { token, user };
-        },
-        saveBook: async (parent, { book }, context) => {
-            if (context.user) {
-                const updateBook = await User.findOneAndUpdate(
-                    { _id: context.user._id },
-                    { $addToSet: {savedBooks: book} },
-                    { new: true }
-                )
-                return updateBook;
-            }
-            throw new AuthenticationError('User must Log in to perform this action')
-        },
-        removeBook: async (parent, { bookId }, context) => {
-            if (context.user) {
-                const updateBook = await User.findOneAndUpdate(
-                    {_id: context.user._id},
-                    { $pull: { savedBooks: { bookId: bookId } } },
-                    { new: true }
-                )
-                return updateBook;
-            }
-            throw new AuthenticationError('User must Log in to perform this action')
-        }
+// making the resolvers in the order that the README has them even though it looks weird.
+const typeDefs = gql`
+    type Query {
+        me: User
     }
-  };
-  
-  module.exports = resolvers;
+    type Mutation {
+        login(email: String!, password: String!): Auth
+        addUser(username: String!, email: String!, password: String!): Auth
+        saveBook(book: SavedBookInput): User
+        removeBook(bookId: String!): User
+    }
+    type User {
+        _id: ID
+        username: String
+        email: String
+        bookCount: Int
+        savedBooks: [Book]        
+    }    
+    type Book {
+        _id: ID
+        bookId: String
+        authors: [String]
+        description: String
+        title: String
+        image: String
+        link: String
+    }
+    type Auth {
+    token: ID!
+    user: User
+    }
+    input SavedBookInput {
+        authors: [String]
+        description: String
+        title: String
+        bookId: String
+        image: String
+        link: String
+    }
+`;
+
+module.exports = typeDefs;
