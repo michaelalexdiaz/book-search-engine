@@ -34,23 +34,23 @@ const resolvers = {
         },
         saveBook: async (parent, { book }, context) => {
             if (context.user) {
-                const updatedUser = await User.findOneAndUpdate(
+                const updateBook = await User.findOneAndUpdate(
                     { _id: context.user._id },
                     { $addToSet: {savedBooks: book} },
                     { new: true }
                 )
-                return updatedUser;
+                return updateBook;
             }
             throw new AuthenticationError('User must Log in to perform this action')
         },
         removeBook: async (parent, { bookId }, context) => {
             if (context.user) {
-                const updatedUser = await User.findOneAndUpdate(
+                const updateBook = await User.findOneAndUpdate(
                     {_id: context.user._id},
                     { $pull: { savedBooks: { bookId: bookId } } },
                     { new: true }
                 )
-                return updatedUser;
+                return updateBook;
             }
             throw new AuthenticationError('User must Log in to perform this action')
         }
